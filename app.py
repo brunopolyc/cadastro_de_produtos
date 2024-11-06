@@ -1,9 +1,10 @@
 import customtkinter as ctk
 from tkinter import *
 from tkinter import messagebox
-#import openpyxl, xdrlib
-#import pathlib
-#from openpyxl import Woorkbook
+from openpyxl import Workbook
+import openpyxl, xdrlib
+import pathlib
+
 
 
 ctk.set_appearance_mode("System")
@@ -31,8 +32,21 @@ class App(ctk.CTk):
         subtitle = ctk.CTkLabel(self, text= "Por favor preencher as informações abaixo:", font=("Neuzeit Grotesk Bold", 12), text_color=["#000","#fff"]).place(x=50, y=100)
         
         #inputs_texto
-        name_input = ctk.CTkEntry(self, width=400, height=50,corner_radius=20, textvariable="name_value", font=("Neuzeit Grotesk Light", 16), fg_color="transparent", border_color="#006eff")
-        tipo_input = ctk.CTkEntry(self, width=200, height=50,corner_radius=20, textvariable="tipo_value",font=("Neuzeit Grotesk Light", 16), fg_color="transparent", border_color="#006eff")
+        self.name_value = ctk.StringVar()
+        self.tipo_value = ctk.StringVar()
+
+        # Usando as variáveis StringVar nos CTkEntry com o parâmetro textvariable
+        name_input = ctk.CTkEntry(self, width=400, height=50, corner_radius=20,
+                                  textvariable=self.name_value, 
+                                  font=("Neuzeit Grotesk Light", 16),
+                                  fg_color="transparent", border_color="#006eff")
+        name_input.pack(pady=20)
+
+        tipo_input = ctk.CTkEntry(self, width=200, height=50, corner_radius=20,
+                                  textvariable=self.tipo_value,
+                                  font=("Neuzeit Grotesk Light", 16),
+                                  fg_color="transparent", border_color="#006eff")
+        tipo_input.pack(pady=20)
 
         #input_select e text
 
@@ -41,19 +55,42 @@ class App(ctk.CTk):
         observaçao_input = ctk.CTkTextbox(self, width=400, height=200, font=("BebasNeue-Light", 16), border_color="#006eff", border_width=2, fg_color="transparent", corner_radius=20)
 
         def submit():
+            ficheiro = pathlib.Path("Cadastro Produtos.xlsx")
+
+            if ficheiro.exists():
+                pass
+            else:
+                ficheiro.Workbook()
+                
+                sheet = ficheiro.active
+                sheet.title = "Produtos"
+                
+                sheet['A1'] = "NOME PRODUTO"
+                sheet['B1'] = "TIPO"
+                sheet['C1'] = "UNIDADES POR EMB."
 
             #pegando dados dos inputs
             name = name_value.get()
             tipo = tipo_value.get()
             obs = observaçao_input.get(0.0,END)
             unit = unidade_input.get()
-            pass
+           
+            ficheiro = openpyxl.load_workbook('Cadastro Produtos.xlsx')
+            folha = ficheiro.active
+            folha.cell(column=1, row=folha.max_row+1, value=name)
+            folha.cell(column=2, row=folha.max_row, value=tipo)
+            folha.cell(column=3, row=folha.max_row, value=unit)
+            folha.cell(column=4, row=folha.max_row, value=obs)
+
+            ficheiro.save(r"Cadastro Produtos.xlsx")
+            messagebox.showinfo("Sistema", "Produto Cadastrado com Sucesso!")
+        
 
         def clear():
-            name = name_value.set("")
-            tipo = tipo_value.set("")
-            obs = observaçao_input.set("")
-            pass
+            self.name_value.set("")
+            self.tipo_value.set("")
+            observaçao_input.delete(0.0, END)
+            
 
         #textos variaveis
         name_value = StringVar()
@@ -65,19 +102,19 @@ class App(ctk.CTk):
         bnt_limpar = ctk.CTkButton(self, text="limpar".upper(), command=clear, fg_color="#555", hover="333")
         
         #campos
-        lb_name = ctk.CTkLabel(self, text= "Nome do Produto:", font=("Neuzeit Grotesk Light", 16), text_color=["#006eff","#fff"])
-        lb_tipo = ctk.CTkLabel(self, text= "Tipo:", font=("Neuzeit Grotesk Light", 16), text_color=["#006eff","#fff"])
-        lb_unidade = ctk.CTkLabel(self, text= "Unidade:", font=("Neuzeit Grotesk Light", 16), text_color=["#006eff","#fff"])
+        lb_name = ctk.CTkLabel(self, text= "Nome do Produto:*", font=("Neuzeit Grotesk Light", 16), text_color=["#006eff","#fff"])
+        lb_unidade = ctk.CTkLabel(self, text= "Unidades por Embalagem:*", font=("Neuzeit Grotesk Light", 16), text_color=["#006eff","#fff"])
+        lb_tipo = ctk.CTkLabel(self, text= "Tipo:*", font=("Neuzeit Grotesk Light", 16), text_color=["#006eff","#fff"])
         lb_observacao = ctk.CTkLabel(self, text= "Observações:", font=("Neuzeit Grotesk Light", 16), text_color=["#006eff","#fff"])
 
         #posições inputs na janelaA
         lb_name.place(x=50, y=120)
         name_input.place(x=50, y=150)
 
-        lb_tipo.place(x=50, y=210)
+        lb_unidade.place(x=50, y=210)
         tipo_input.place(x=50,y=240)
 
-        lb_unidade.place(x=270, y=210)
+        lb_tipo.place(x=270, y=210)
         unidade_input.place(x=270,y=240)
 
         lb_observacao.place(x=50, y=300)
